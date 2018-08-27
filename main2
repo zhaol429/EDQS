@@ -1,0 +1,87 @@
+#include "head.h"
+
+int pos = 0;
+word_t **p = NULL;
+
+int main(int argc, char *argv[])
+{
+	char str[30];
+	int i = 0, j = 0;
+
+	printf("Loading......");
+	read_txtfile();	
+	read_add();
+	system("clear");
+	puts("***************************************************");
+	puts("查找单词时可以输入以下命令:");
+	printf("\t-exit:退出\n");
+	printf("\t-binfind:(-bf)二进制查询:\n");
+	printf("\t-binsave:(-bs)存储为二进制文件:\n");
+	printf("\t-add:手动添加词条\n");
+
+	while (1) {
+		printf("\n输入查找内容:");
+		scanf("%29s", str);
+		if (! strcasecmp(str, "-bs") || ! strcasecmp(str, "-binsave")) {
+			write_binary();
+			puts("存储完毕!");
+			continue;
+		}
+		else if (! strcasecmp(str, "-exit"))
+			break;
+		else if (! strcasecmp(str, "-bf") || ! strcasecmp(str, "-binfind")) {
+			destroy();
+			read_binary();
+			puts("载入完毕!");
+			continue;
+		}
+		else if (! strcasecmp(str, "-add")) {
+			add_word(NULL);
+			continue;
+		}
+
+		i = find_text(str);
+		if (i == 0) { 
+			extern int add_pos;
+			for (i = pos; i < pos + add_pos; i++)
+				if (! strcasecmp(str, p[i]->key)) {
+					for (j = 0; j < p[i]->n; j++)
+						printf("Trans:%s\n", p[i]->trans[j]);
+					break;
+				}
+			if (i == pos + add_pos) {
+				printf("未找到!, 是否追加单词入库(y/n):");
+				char choice;
+				while ((choice = getchar()) != '\n') ;
+				scanf("%c", &choice);
+				if (choice == 'y' || choice == 'Y')
+					add_word(str);
+				continue;
+			}
+		}
+		else {
+			for (j = 0; j < p[i]->n; j++)
+				printf("Trans:%s\n", p[i]->trans[j]);
+		}
+	}
+
+	destroy();
+	return 0;
+}
+
+void destroy(void)
+{
+	int i = 0, j = 0;
+
+	for (i = 0; i < pos; i++) {
+		for (j = 0; j < p[i]->n; j++) 
+			free(p[i]->trans[j]);
+		free(p[i]->trans);
+		free(p[i]->key);
+		free(p[i]);
+	}
+	free(p);
+	pos = 0;
+	p = NULL;
+	return;
+}
